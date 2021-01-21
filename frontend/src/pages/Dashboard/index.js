@@ -42,18 +42,7 @@ const Dashboard = () => {
       <Button onClick={()=>setModalInfos(false)} color='red'>
         <Icon name='remove' /> Cancelar
       </Button>
-      <Button onClicl={()=>{
-    async function fetchData() {
-      try{
-        const response = await api.post('/alunos');
-        setAlunos(response.data);
-      } catch {
-        alert('Confira a api');
-      }
-    }
-    fetchData();
-    setModalInfos(false);
-  }} color='green'>
+      <Button color='green'>
         <Icon name='checkmark' /> Salvar
       </Button>
     </Modal.Actions>
