@@ -42,7 +42,18 @@ const Dashboard = () => {
       <Button onClick={()=>setModalInfos(false)} color='red'>
         <Icon name='remove' /> Cancelar
       </Button>
-      <Button color='green'>
+      <Button onClicl={()=>{
+    async function fetchData() {
+      try{
+        const response = await api.post('/alunos');
+        setAlunos(response.data);
+      } catch {
+        alert('Confira a api');
+      }
+    }
+    fetchData();
+    setModalInfos(false);
+  }} color='green'>
         <Icon name='checkmark' /> Salvar
       </Button>
     </Modal.Actions>
@@ -103,7 +114,7 @@ const Dashboard = () => {
         </Table.Body>
       </Table>
       {render_modal_info_alunos()}
-      <Button primary>Adicionar aluno</Button>
+      <Button primary onClick={() => setModalInfos(true)}>Adicionar aluno</Button>
       <Button href="/" secondary>Ver instruções</Button>
     </Container>
   );
