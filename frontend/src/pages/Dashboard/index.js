@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 // components
-import { Table, Button, Popup, Modal, Header, Icon, Form } from 'semantic-ui-react'
+import { Table, Button, Popup, Modal, Header, Icon, Form, Select } from 'semantic-ui-react';
 
 //services
 import api from '../../services/api';
@@ -16,19 +16,25 @@ const Dashboard = () => {
   const [alunos, setAlunos] = useState([]);
   const [currentInfo, setCurrentInfo] = useState([]);
   const [modalInfos, setModalInfos] = useState(false);
+  const [modalCursos, setModalCursos] = useState(false);
   const [change, setChange] = useState(0);
+  const [cursos, setCursos] = useState([]);
+  const [optionsSelect, setOptionsSelect] = useState([]);
 
   useEffect(()=>{
     async function fetchData() {
       try{
-        const response = await api.get('/alunos');
-        setAlunos(response.data);
+        const responseAluno = await api.get('/alunos');
+        const responseCursos = await api.get('/cursos');
+        setAlunos(responseAluno.data);
+        setCursos(responseCursos.data);
       } catch {
         alert('Confira a api');
       }
     }
     fetchData();
   }, [currentInfo, modalInfos, change])
+
   function isACep(cep) {
     if (cep.length !== 8 && cep.length !== 9) {
       alert('Cep deve conter 8 dígitos');
@@ -37,6 +43,7 @@ const Dashboard = () => {
         return true;
     }
   }
+
   function createValues(name, email, cep, city, state) {
     let values = {};
     if (name !== '') {
@@ -56,6 +63,7 @@ const Dashboard = () => {
     }
     return values;
   }
+
     const submit = async () => {
       let city = '';
       let state;
@@ -113,10 +121,53 @@ const Dashboard = () => {
   </Modal>
   )
 
+  function getOptionsSelect() {
+    let optionsObj = {};
+    let optionsArray = [];
+    cursos.forEach((v, i)=>{
+      let optionsObj = {key: v.id, value: v.id, text: v.nome};
+      optionsArray[i] = optionsObj;
+    })
+    setOptionsSelect(optionsArray);
+  }
+
+  const render_modal_adiciona_curso = () => (
+    <Modal open={modalCursos} onClose={()=>{
+      setModalCursos(false);
+      setCurrentInfo([]);
+    }} closeIcon>
+    <Header content={`Adicionar um curso para ${currentInfo.nome}`} />
+    <Modal.Content>
+      <Form>
+        <Form.Group widths='equal'>
+          <Select placeholder="Selecione um curso" options={optionsSelect} />
+        </Form.Group>
+      </Form>
+    </Modal.Content>
+    <Modal.Actions>
+      <Button color='red' onClick={()=>{
+
+        setModalCursos(false);
+        setCurrentInfo([]);
+      }}>
+        <Icon name='remove' /> Cancelar
+      </Button>
+      <Button color='green' onClick={() => submit()}>
+        <Icon name='checkmark' /> Salvar
+      </Button>
+    </Modal.Actions>
+  </Modal>
+  )
+
   function open_info_alunos(data_aluno){
     console.log(data_aluno)
     setCurrentInfo(data_aluno)
     setModalInfos(true)
+  }
+  function open_modal_cursos(data_aluno){
+    console.log(data_aluno);
+    setCurrentInfo(data_aluno);
+    setModalCursos(true);
   }
 
   async function delete_aluno(aluno_id){
@@ -132,7 +183,10 @@ const Dashboard = () => {
         basic
       />
       <Popup
-        trigger={<Button icon='plus' positive />}
+        trigger={<Button icon='plus' positive onClick={()=>{
+          open_modal_cursos(data_aluno);
+          getOptionsSelect();
+        }} />}
         content="Adicionar curso para aluno"
         basic
       />
@@ -147,7 +201,7 @@ const Dashboard = () => {
   function render_alunos(){
     return alunos.map((v)=><Table.Row>
       <Table.Cell>{v.id}</Table.Cell>
-      <Table.Cell>{v.nome}</Table.Cell>
+      <Table.Cell >{v.nome}</Table.Cell>
       <Table.Cell>{v.email}</Table.Cell>
       <Table.Cell>{v.cep}</Table.Cell>
       <Table.Cell>{render_actions(v)}</Table.Cell>
@@ -172,6 +226,7 @@ const Dashboard = () => {
         </Table.Body>
       </Table>
       {render_modal_info_alunos()}
+      {render_modal_adiciona_curso()}
       <Button primary onClick={() => setModalInfos(true)}>Adicionar aluno</Button>
       <Button href="/" secondary>Ver instruções</Button>
     </Container>
