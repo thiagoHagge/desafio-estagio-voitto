@@ -20,6 +20,7 @@ const Dashboard = () => {
   const [change, setChange] = useState(0);
   const [cursos, setCursos] = useState([]);
   const [optionsSelect, setOptionsSelect] = useState([]);
+  const [cursoSelected, setCursoSelected] = useState();
 
   useEffect(()=>{
     async function fetchData() {
@@ -64,7 +65,7 @@ const Dashboard = () => {
     return values;
   }
 
-    const submit = async () => {
+    const submitAluno = async () => {
       let city = '';
       let state;
       let isANewStudent = false;
@@ -91,6 +92,15 @@ const Dashboard = () => {
 
   }
 
+  async function submitCurso() {
+
+    await api.post('/cursos/aluno', {
+      "id_pessoa": currentInfo.id,
+      "id_curso": cursoSelected
+    });
+    setModalCursos(false);
+  }
+
   const render_modal_info_alunos = () => (
     <Modal open={modalInfos} onClose={()=>{
       setModalInfos(false);
@@ -114,21 +124,24 @@ const Dashboard = () => {
       }}>
         <Icon name='remove' /> Cancelar
       </Button>
-      <Button color='green' onClick={() => submit()}>
+      <Button color='green' onClick={() => submitAluno()}>
         <Icon name='checkmark' /> Salvar
       </Button>
     </Modal.Actions>
   </Modal>
   )
 
+  let optionsArray = [];
   function getOptionsSelect() {
-    let optionsObj = {};
-    let optionsArray = [];
     cursos.forEach((v, i)=>{
       let optionsObj = {key: v.id, value: v.id, text: v.nome};
       optionsArray[i] = optionsObj;
     })
     setOptionsSelect(optionsArray);
+    console.log(optionsArray)
+  }
+  const handleChange = (e, data) => {
+    setCursoSelected(data.value);
   }
 
   const render_modal_adiciona_curso = () => (
@@ -140,7 +153,13 @@ const Dashboard = () => {
     <Modal.Content>
       <Form>
         <Form.Group widths='equal'>
-          <Select placeholder="Selecione um curso" options={optionsSelect} />
+        <Select
+          label="Cursos"
+          name='cursos'
+          placeholder="Selecione um curso"
+          options={optionsSelect}
+          onChange={handleChange}
+        />
         </Form.Group>
       </Form>
     </Modal.Content>
@@ -152,7 +171,9 @@ const Dashboard = () => {
       }}>
         <Icon name='remove' /> Cancelar
       </Button>
-      <Button color='green' onClick={() => submit()}>
+      <Button color='green' onClick={()=>{
+        submitCurso();
+      }}>
         <Icon name='checkmark' /> Salvar
       </Button>
     </Modal.Actions>
